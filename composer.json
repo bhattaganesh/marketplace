@@ -1,0 +1,21 @@
+{
+  "name": "ganesh-bhatta/marketplace",
+  "description": "A marketplace project with multiple web services.",
+  "type": "project",
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "firebase/php-jwt": "^5.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Marketplace\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Ganesh Bhatta",
+      "email": "bhattaganesh05@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable"
+}
