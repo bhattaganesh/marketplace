@@ -30,6 +30,7 @@ class PurchaseService
         $totalPrice = $item['price'] * $quantity;
 
         $user = $this->userModel->getUser($userId);
+
         if ($user['balance'] < $totalPrice) {
             return ['success' => false, 'message' => 'Insufficient balance.'];
         }
@@ -48,21 +49,37 @@ class PurchaseService
         return ['success' => true, 'message' => 'Purchase completed successfully!'];
     }
 
+    public function getPurchasesByUserId($userId)
+    {
+        $purchases = $this->purchaseModel->getPurchasesForUser($userId);
+
+        if (!$purchases) {
+            return ['success' => false, 'message' => 'No purchases found for the user.'];
+        }
+
+        return ['success' => true, 'data' => $purchases];
+    }
+
     public function getPurchaseDetails($purId)
     {
-        return $this->purchaseModel->getPurchase($purId);
+        $purchase = $this->purchaseModel->getPurchase($purId);
+
+        if (!$purchase) {
+            return ['success' => false, 'message' => 'Purchase not found.'];
+        }
+
+        return ['success' => true, 'data' => $purchase];
     }
 
-    public function removePurchase($purId)
-    {
-        return $this->purchaseModel->deletePurchase($purId);
-    }
-
-    public function findPurchasesByUser($userId)
-    {
-    }
 
     public function cancelPurchase($purId)
     {
+        $deletedRows = $this->purchaseModel->deletePurchase($purId);
+
+        if (!$deletedRows) {
+            return ['success' => false, 'message' => 'Failed to cancel the purchase or purchase not found.'];
+        }
+
+        return ['success' => true, 'message' => 'Purchase cancelled successfully.'];
     }
 }

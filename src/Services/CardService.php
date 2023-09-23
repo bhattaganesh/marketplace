@@ -21,19 +21,19 @@ class CardService
         $result = $this->cardModel->verifyCard($cardNum, $pin);
 
         if ($result) {
-            return $this->generateJWT($result);
+            return $this->generateJWT($result['card_num']);
         } else {
             return false;
         }
     }
 
-    private function generateJWT($cardData)
+    private function generateJWT($cardNum)
     {
         $payload = [
-            "iss" => "your-issuer-identifier", // Issuer of the JWT
-            "iat" => time(), // Issued at time
-            "exp" => time() + 3600, // Expiration time (+1 hour)
-            "card_id" => $cardData['id'] // Storing card ID in the JWT payload
+            "iss" => "your-issuer-identifier",
+            "iat" => time(),
+            "exp" => time() + 300, // Expiration time (5 minutes from now)
+            "card_num" => $cardNum
         ];
 
         return JWT::encode($payload, $this->jwtKey);

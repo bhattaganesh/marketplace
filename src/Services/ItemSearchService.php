@@ -51,7 +51,6 @@ class ItemSearchService
         $output = file_get_contents($endpoint, false, $context);
 
         if ($output === false) {
-            error_log('Failed to fetch content from ' . $endpoint);
             return [];
         }
 

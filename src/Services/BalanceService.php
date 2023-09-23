@@ -16,6 +16,18 @@ class BalanceService
 
     public function addUserBalance($userId, $amount)
     {
-        return $this->userModel->updateUserBalance($userId, $amount);
+        $user = $this->userModel->getUser($userId);
+
+        if (!$user) {
+            return ['success' => false, 'message' => 'User not found.'];
+        }
+
+        $result = $this->userModel->updateUserBalance($userId, $amount);
+
+        if ($result) {
+            return ['success' => true, 'message' => 'Balance updated successfully.'];
+        } else {
+            return ['success' => false, 'message' => 'Failed to update balance.'];
+        }
     }
 }

@@ -33,4 +33,11 @@ class PurchaseModel
         $stmt->execute([$purId]);
         return $stmt->rowCount();
     }
+
+    public function getPurchasesForUser($userId)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM PURCHASE WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

@@ -4,7 +4,8 @@
   "type": "project",
   "require": {
     "php": "^7.4 || ^8.0",
-    "firebase/php-jwt": "^5.2"
+    "firebase/php-jwt": "^5.2",
+    "vlucas/phpdotenv": "^5.5"
   },
   "autoload": {
     "psr-4": {

@@ -22,8 +22,15 @@ class UserModel
 
     public function updateUserBalance($userId, $amount)
     {
+        $user = $this->getUser($userId);
+        if (!$user) {
+            return false;
+        }
+
         $stmt = $this->conn->prepare("UPDATE USER SET balance = balance + ? WHERE user_id = ?");
         $stmt->execute([$amount, $userId]);
-        return $stmt->rowCount();
+
+        // Return true if at least one row was affected.
+        return $stmt->rowCount() > 0;
     }
 }

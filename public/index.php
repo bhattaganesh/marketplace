@@ -31,7 +31,6 @@ class App
 
     public function run()
     {
-
         $response = $this->routeRequest();
         $this->sendResponse($response);
     }
@@ -74,9 +73,17 @@ class App
             return $this->searchForItems();
         }
 
-        if ($method === 'POST' && $path === '/purchase') {
+        // Endpoint: Purchase item
+        if ($method === 'POST' && $path === '/purchase-item') {
+            $token = $this->data['token'] ?? null;
+
+            if (!$this->validateToken($token)) {
+                return ['success' => false, 'message' => 'Invalid or expired token.'];
+            }
+
             return $this->purchaseItem();
         }
+
 
         if ($method === 'GET' && $path === '/search-purchase') {
             return $this->searchPurchase();
@@ -86,20 +93,30 @@ class App
             return $this->cancelPurchase();
         }
 
-        if ($method === 'PUT' && $path === '/add-balance') {
-            return $this->addBalance();
+        // Endpoint: Add Balance
+        if ($method === 'POST' && $path === '/add-balance') {
+            $token = $this->data['token'] ?? null;
+
+            if (!$this->validateToken($token)) {
+                return ['success' => false, 'message' => 'Invalid or expired token.'];
+            }
+
+            $amount = $this->data['amount'] ?? 0;
+            $userId = $this->data['userId'] ?? 0;
+
+            $balanceService = new BalanceService($this->db);
+            return $balanceService->addUserBalance($userId, $amount);
         }
 
-
+        // Endpoint: Card Check
         if ($method === 'POST' && $path === '/card-check') {
             $cardNum = $this->data['cardNum'] ?? null;
             $pin = $this->data['pin'] ?? null;
 
-            // Initialize CardService with database connection and JWT key
-            $jwtKey = "YOUR_JWT_SECRET_KEY";  // Define your secret JWT key here
-            $cardService = new CardService($this->db, $jwtKey);
+            $cardService = $this->getCardService();
 
             $jwt = $cardService->verifyCardCredentials($cardNum, $pin);
+
             if ($jwt) {
                 return ['status' => 'success', 'token' => $jwt];
             } else {
@@ -156,14 +173,12 @@ class App
         return ['success' => true, 'items' => $results];
     }
 
-
-
     private function purchaseItem()
     {
-        $itemId = $this->data['itemId'] ?? null;
-        $userId = $this->data['userId'] ?? null;
+        $itemId = $this->data['itemId'] ?? 0;
+        $userId = $this->data['userId'] ?? 0;
         $quantity = $this->data['quantity'] ?? 1;
-        $seller = $this->data['seller'] ?? null;
+        $seller = $this->data['seller'] ?? null; // Expected values are either Seller1 or Seller2.
 
         $purchaseService = new PurchaseService($this->db);
         return $purchaseService->makePurchase($userId, $itemId, $quantity, $seller);
@@ -172,25 +187,40 @@ class App
 
     private function searchPurchase()
     {
-        $purId = $this->data['purId'] ?? null;
+        $purId = $_GET['purId'] ?? 0;
+        $userId = $_GET['userId'] ?? 0;
+
         $purchaseService = new PurchaseService($this->db);
-        return $purchaseService->getPurchaseDetails($purId);
+
+        if ($purId) {
+            return $purchaseService->getPurchaseDetails($purId);
+        } elseif ($userId) {
+            return $purchaseService->getPurchasesByUserId($userId);
+        } else {
+            return ['success' => false, 'message' => 'Neither purId nor userId provided.'];
+        }
     }
 
     private function cancelPurchase()
     {
-        $purchaseId = $this->data['purchaseId'] ?? null;
+        $purchaseId = $this->data['purchaseId'] ?? 0;
         $purchaseService = new PurchaseService($this->db);
         return $purchaseService->cancelPurchase($purchaseId);
     }
 
-    private function addBalance()
+    private function getCardService()
     {
-        $amount = $this->data['amount'] ?? 0;
-        $userId = $this->data['userId'] ?? null;
+        $jwtKey = $_ENV['JWT_SECRET_KEY'];
+        return new CardService($this->db, $jwtKey);
+    }
 
-        $balanceService = new BalanceService($this->db);
-        return $balanceService->addUserBalance($userId, $amount);
+    private function validateToken($token)
+    {
+        $cardService = $this->getCardService();
+        if (!$cardService->validateJWT($token)) {
+            return false;
+        }
+        return true;
     }
 }
 

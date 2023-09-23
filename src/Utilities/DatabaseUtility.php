@@ -12,9 +12,9 @@ class DatabaseUtility
 
         $tables = [
             "CREATE TABLE IF NOT EXISTS CARD (
-                card_holder_name VARCHAR(255),
+                card_holder_name VARCHAR(255) NOT NULL,
                 card_num VARCHAR(255) PRIMARY KEY,
-                pin INT
+                pin INT NOT NULL
             )",
             "CREATE TABLE IF NOT EXISTS USER (
                 user_id INT AUTO_INCREMENT PRIMARY KEY,
