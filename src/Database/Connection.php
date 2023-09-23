@@ -11,7 +11,7 @@ class Connection
     private $_conn;
 
     private $_host = 'localhost';
-    private $_dbname = 'marketplace_db';
+    private $_dbname = 'marketplace_db'; // OnlineShoppingDB
     private $_username = 'ganesh_bhatta';
     private $_password = '40028008';
     private $_charset = 'utf8mb4';
