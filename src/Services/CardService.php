@@ -30,7 +30,7 @@ class CardService
     private function generateJWT($cardNum)
     {
         $payload = [
-            "iss" => "your-issuer-identifier",
+            "iss" => "Marketplace",
             "iat" => time(),
             "exp" => time() + 300, // Expiration time (5 minutes from now)
             "card_num" => $cardNum
@@ -45,7 +45,6 @@ class CardService
             $decoded = JWT::decode($token, $this->jwtKey, array('HS256'));
             return (array) $decoded;
         } catch (\Exception $e) {
-            // Token is invalid
             return false;
         }
     }
