@@ -86,6 +86,13 @@ class App
         }
 
         if ($method === 'DELETE' && $path === '/cancel-purchase') {
+
+            $token = $this->data['token'] ?? null;
+
+            if (!$this->validateToken($token)) {
+                return ['success' => false, 'message' => 'Invalid or expired token.'];
+            }
+
             return $this->cancelPurchase();
         }
 

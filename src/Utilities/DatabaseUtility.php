@@ -27,7 +27,7 @@ class DatabaseUtility
                 item_id INT,
                 quantity INT,
                 price DECIMAL(10, 2),
-                seller_id INT,
+                seller_id VARCHAR(255),
                 date DATETIME,
                 FOREIGN KEY (user_id) REFERENCES USER(user_id)
             )",

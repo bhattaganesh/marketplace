@@ -11,8 +11,8 @@ function setUserId() {
   alert(`User ID set to ${currentUserId}`);
 }
 
-function showCardCheckModal(callback) {
-  if (!currentUserId) {
+function showCardCheckModal(callback, isUserIdRequired = true) {
+  if (isUserIdRequired && !currentUserId) {
     alert("Please provide a User ID.");
     return;
   }
@@ -146,7 +146,6 @@ function purchaseItem(itemId) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         if (data.success) {
           alert("Item purchased successfully.");
         } else {
@@ -200,7 +199,7 @@ function displayPurchases(purchases) {
 
   let html = '<table border="1" cellspacing="0" cellpadding="10">';
   html +=
-    "<thead><tr><th>Purchase ID</th><th>User ID</th><th>Item ID</th><th>Quantity</th><th>Price</th><th>Seller</th><th>Date</th></tr></thead><tbody>";
+    "<thead><tr><th>Purchase ID</th><th>User ID</th><th>Item ID</th><th>Quantity</th><th>Price</th><th>Seller</th><th>Date</th><th>Actions</th></tr></thead><tbody>";
 
   purchases.forEach((purchase) => {
     html += `<tr>
@@ -211,12 +210,54 @@ function displayPurchases(purchases) {
                   <td>${purchase.price}</td>
                   <td>${purchase.seller_id}</td>
                   <td>${purchase.date}</td>
+                  <td><button onclick="cancelPurchase('${purchase.pur_id}')">Cancel</button></td>
               </tr>`;
   });
 
   html += "</tbody></table>";
 
   contentDiv.innerHTML = html;
+}
+
+function cancelPurchase(purchaseId) {
+  showCardCheckModal(function () {
+    if (!currentToken) {
+      return;
+    }
+
+    const data = {
+      token: currentToken,
+      purchaseId: purchaseId,
+    };
+
+    fetch("https://marketplace.test/cancel-purchase", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.success) {
+          alert("Purchase canceled successfully.");
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch((error) => {
+        console.error(
+          "There was a problem with the fetch operation:",
+          error.message
+        );
+      });
+  }, false);
 }
 
 function showAddBalanceForm() {
