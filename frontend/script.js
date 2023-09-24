@@ -1,4 +1,4 @@
-let currentUserId = 5;
+let currentUserId = null;
 let currentToken = null;
 
 function setUserId() {
@@ -12,6 +12,11 @@ function setUserId() {
 }
 
 function showCardCheckModal(callback) {
+  if (!currentUserId) {
+    alert("Please provide a User ID.");
+    return;
+  }
+
   const modal = document.getElementById("cardCheckModal");
   modal.style.display = "block";
 
