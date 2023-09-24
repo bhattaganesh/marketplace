@@ -56,10 +56,6 @@ class App
         $method = $this->requestMethod;
         $path = $this->pathInfo;
 
-        if ($method === 'GET' && $path === '/test') {
-            return $this->handleTestEndpoint();
-        }
-
         if ($method === 'GET' && $path === '/seller1/items') {
             return $this->getItemList();
         }
@@ -125,12 +121,6 @@ class App
         }
 
         return $this->handleInvalidEndpoint();
-    }
-
-
-    private function handleTestEndpoint()
-    {
-        return ['status' => 'success', 'message' => 'Tested Successfully.'];
     }
 
     private function handleInvalidEndpoint()
