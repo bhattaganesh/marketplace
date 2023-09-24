@@ -120,6 +120,10 @@ class App
             }
         }
 
+        if ($method === 'OPTIONS') {
+            return []; // Just return an empty response for OPTIONS request
+        }
+
         return $this->handleInvalidEndpoint();
     }
 

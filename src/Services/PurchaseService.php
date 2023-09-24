@@ -27,9 +27,14 @@ class PurchaseService
             return ['success' => false, 'message' => 'Item not found.'];
         }
 
-        $totalPrice = $item['price'] * $quantity;
+        $totalPrice = $item['price_of_unit'] *  $quantity;
+        $formattedPrice = number_format($totalPrice, 2, '.', '');
 
         $user = $this->userModel->getUser($userId);
+
+        if (!$user) {
+            return ['success' => false, 'message' => 'User not found.'];
+        }
 
         if ($user['balance'] < $totalPrice) {
             return ['success' => false, 'message' => 'Insufficient balance.'];
@@ -39,11 +44,16 @@ class PurchaseService
             'user_id' => $userId,
             'item_id' => $itemId,
             'quantity' => $quantity,
-            'price' => $totalPrice,
+            'price' => $formattedPrice,
             'seller_id' => $seller
         ];
 
-        $this->purchaseModel->insertPurchase($purchaseData);
+        $purId = $this->purchaseModel->insertPurchase($purchaseData);
+
+        if (!$purId) {
+            return ['success' => false, 'message' => 'Sorry!, error while creating purchasing.'];
+        }
+
         $this->userModel->updateUserBalance($userId, -$totalPrice);
 
         return ['success' => true, 'message' => 'Purchase completed successfully!'];
@@ -68,7 +78,7 @@ class PurchaseService
             return ['success' => false, 'message' => 'Purchase not found.'];
         }
 
-        return ['success' => true, 'data' => $purchase];
+        return ['success' => true, 'data' => array($purchase)];
     }
 
 

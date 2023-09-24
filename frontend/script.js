@@ -1,4 +1,4 @@
-let currentUserId = null;
+let currentUserId = 5;
 let currentToken = null;
 
 function setUserId() {
@@ -11,9 +11,13 @@ function setUserId() {
   alert(`User ID set to ${currentUserId}`);
 }
 
-function showCardCheckModal() {
+function showCardCheckModal(callback) {
   const modal = document.getElementById("cardCheckModal");
   modal.style.display = "block";
+
+  if (callback && typeof callback === "function") {
+    modalCallback = callback;
+  }
 }
 
 function closeCardCheckModal() {
@@ -37,6 +41,10 @@ function validateCard() {
       if (data.status === "success") {
         currentToken = data.token;
         closeCardCheckModal();
+        if (modalCallback) {
+          modalCallback();
+          modalCallback = null;
+        }
       } else {
         alert(data.message || "Card validation failed.");
       }
@@ -106,31 +114,47 @@ function purchaseItem(itemId) {
     return;
   }
 
-  showCardCheckModal();
+  showCardCheckModal(function () {
+    if (!currentToken) {
+      return;
+    }
 
-  const data = {
-    token: currentToken,
-    itemId: itemId,
-    userId: userId,
-    quantity: 1,
-    seller: "Seller1",
-  };
+    const data = {
+      token: currentToken,
+      itemId: itemId,
+      userId: userId,
+      quantity: 1,
+      seller: "Seller1",
+    };
 
-  fetch("https://marketplace.test/purchase-item", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        alert("Item purchased successfully.");
-      } else {
-        alert(data.message);
-      }
-    });
+    fetch("https://marketplace.test/purchase-item", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.success) {
+          alert("Item purchased successfully.");
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch((error) => {
+        console.error(
+          "There was a problem with the fetch operation:",
+          error.message
+        );
+      });
+  });
 }
 
 function searchPurchase() {
@@ -197,7 +221,7 @@ function showAddBalanceForm() {
   const html = `
       <h2>Add Balance</h2>
       <label for="userIdInput">User ID:</label>
-      <input type="number" id="userIdInput" value="${userId}" />
+      <input type="number" id="balanceUserIdInput" value="${userId}" />
       <br><br>
       <label for="balanceAmount">Amount to Add:</label>
       <input type="number" id="balanceAmount">
@@ -209,32 +233,51 @@ function showAddBalanceForm() {
 }
 
 function addBalance() {
-  const userId = document.getElementById("userIdInput").value;
-  const amount = document.getElementById("balanceAmount").value;
+  const userIdInput = document.getElementById("balanceUserIdInput");
+  const balanceAmountInput = document.getElementById("balanceAmount");
+  const userId = userIdInput.value;
+  const amount = parseFloat(balanceAmountInput.value);
 
-  showCardCheckModal();
+  // Validate the user input
+  if (!userId) {
+    alert("Please provide a User ID.");
+    return;
+  }
 
-  const data = {
-    token: currentToken,
-    userId: userId,
-    amount: amount,
-  };
+  if (isNaN(amount) || amount <= 0) {
+    alert("Please provide a valid amount greater than 0.");
+    return;
+  }
 
-  fetch("https://marketplace.test/add-balance", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        alert("Balance added successfully.");
-      } else {
-        alert(data.message);
-      }
-    });
+  showCardCheckModal(() => {
+    if (!currentToken) {
+      return;
+    }
+
+    const data = {
+      token: currentToken,
+      userId: userId,
+      amount: amount,
+    };
+
+    fetch("https://marketplace.test/add-balance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          userIdInput.value = currentUserId;
+          balanceAmountInput.value = "";
+          alert("Balance added successfully.");
+        } else {
+          alert(data.message);
+        }
+      });
+  });
 }
 
 // Initialize the default view with Seller1's items
