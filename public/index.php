@@ -56,6 +56,10 @@ class App
         $method = $this->requestMethod;
         $path = $this->pathInfo;
 
+        if ($method === 'GET' && $path === '/frontend') {
+            include_once '../frontend/index.php';
+        }
+
         if ($method === 'GET' && $path === '/seller1/items') {
             return $this->getItemList();
         }

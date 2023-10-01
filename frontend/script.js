@@ -1,5 +1,6 @@
 let currentUserId = null;
 let currentToken = null;
+const DOMAIN = "";
 
 function setUserId() {
   const userId = document.getElementById("userIdInput").value;
@@ -34,7 +35,7 @@ function validateCard() {
   const cardNum = document.getElementById("cardNum").value;
   const pin = document.getElementById("pin").value;
 
-  fetch("https://marketplace.test/card-check", {
+  fetch(`${DOMAIN}/card-check`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -57,7 +58,7 @@ function validateCard() {
 }
 
 function fetchItems(seller) {
-  const endpoint = `https://marketplace.test/${seller}/items`;
+  const endpoint = `${DOMAIN}/${seller}/items`;
 
   fetch(endpoint)
     .then((response) => response.json())
@@ -77,12 +78,11 @@ function searchItems() {
     return;
   }
 
-  const endpoint = `https://marketplace.test/items?search=${searchTerm}`;
+  const endpoint = `${DOMAIN}/items?search=${searchTerm}`;
 
   fetch(endpoint)
     .then((response) => response.json())
     .then((data) => {
-      console.log(data, "testing data");
       if (data.success) {
         displayItems(data.items);
       } else {
@@ -135,7 +135,7 @@ function purchaseItem(itemId, sellerIP) {
       seller_ip: sellerIP,
     };
 
-    fetch("https://marketplace.test/purchase-item", {
+    fetch(`${DOMAIN}/purchase-item`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -149,8 +149,6 @@ function purchaseItem(itemId, sellerIP) {
         return response.json();
       })
       .then((data) => {
-        console.log(data, "seller ip address");
-
         if (data.success) {
           alert("Item purchased successfully.");
         } else {
@@ -178,9 +176,9 @@ function searchPurchase() {
   let endpoint;
 
   if (searchType === "userId") {
-    endpoint = `https://marketplace.test/search-purchase?userId=${searchInput}`;
+    endpoint = `${DOMAIN}/search-purchase?userId=${searchInput}`;
   } else {
-    endpoint = `https://marketplace.test/search-purchase?purId=${searchInput}`;
+    endpoint = `${DOMAIN}/search-purchase?purId=${searchInput}`;
   }
 
   fetch(endpoint)
@@ -235,7 +233,7 @@ function cancelPurchase(purchaseId) {
       purchaseId: purchaseId,
     };
 
-    fetch("https://marketplace.test/cancel-purchase", {
+    fetch(`${DOMAIN}/cancel-purchase`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -313,7 +311,7 @@ function addBalance() {
       amount: amount,
     };
 
-    fetch("https://marketplace.test/add-balance", {
+    fetch(`${DOMAIN}/add-balance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

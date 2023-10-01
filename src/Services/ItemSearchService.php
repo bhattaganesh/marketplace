@@ -9,8 +9,8 @@ class ItemSearchService
     public function __construct()
     {
         $this->endpoints = [
-            '127.0.0.1:8080' => 'https://marketplace.test/seller1/items', // Here we are representing seller 1 as IP address 127.0.0.1:8080
-            '127.0.0.1:8000' => 'https://marketplace.test/seller2/items', // Here we are representing seller 2 as IP address 127.0.0.1:8000
+            '127.0.0.1:8080' => $_ENV['DOMAIN'] . '/seller1/items', // Here we are representing seller 1 as IP address 127.0.0.1:8080
+            '127.0.0.1:8000' => $_ENV['DOMAIN'] . '/seller2/items', // Here we are representing seller 2 as IP address 127.0.0.1:8000
         ];
     }
 
