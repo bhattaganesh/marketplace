@@ -21,7 +21,7 @@ class PurchaseService
 
     public function makePurchase($userId, $itemId, $quantity, $seller)
     {
-        $item = $this->itemModel->getItemById($itemId, $seller);
+        $item = $this->itemModel->getItemById((int)$itemId, $seller);
 
         if (!$item) {
             return ['success' => false, 'message' => 'Item not found.'];
@@ -30,7 +30,7 @@ class PurchaseService
         $totalPrice = $item['price_of_unit'] *  $quantity;
         $formattedPrice = number_format($totalPrice, 2, '.', '');
 
-        $user = $this->userModel->getUser($userId);
+        $user = $this->userModel->getUser((int)$userId);
 
         if (!$user) {
             return ['success' => false, 'message' => 'User not found.'];
@@ -45,7 +45,7 @@ class PurchaseService
             'item_id' => $itemId,
             'quantity' => $quantity,
             'price' => $formattedPrice,
-            'seller_id' => $seller
+            'seller_ip' => $seller
         ];
 
         $purId = $this->purchaseModel->insertPurchase($purchaseData);

@@ -11,37 +11,38 @@ class DatabaseUtility
         $conn = Connection::getInstance()->getConnection();
 
         $tables = [
-            "CREATE TABLE IF NOT EXISTS CARD (
+            "CREATE TABLE IF NOT EXISTS card (
+                card_id INT AUTO_INCREMENT PRIMARY KEY,
                 card_holder_name VARCHAR(255) NOT NULL,
-                card_num VARCHAR(255) PRIMARY KEY,
+                card_num CHAR(16) NOT NULL UNIQUE,
                 pin INT NOT NULL
             )",
-            "CREATE TABLE IF NOT EXISTS USER (
+            "CREATE TABLE IF NOT EXISTS user (
                 user_id INT AUTO_INCREMENT PRIMARY KEY,
-                balance DECIMAL(10, 2),
-                user_address VARCHAR(255)
+                balance DECIMAL(10, 2) DEFAULT 0.00 NOT NULL,
+                user_address VARCHAR(255) NOT NULL
             )",
-            "CREATE TABLE IF NOT EXISTS PURCHASE (
+            "CREATE TABLE IF NOT EXISTS purchase (
                 pur_id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT,
                 item_id INT,
                 quantity INT,
                 price DECIMAL(10, 2),
-                seller_id VARCHAR(255),
+                seller_ip VARCHAR(255),
                 date DATETIME,
-                FOREIGN KEY (user_id) REFERENCES USER(user_id)
+                FOREIGN KEY (user_id) REFERENCES user(user_id)
             )",
-            "CREATE TABLE IF NOT EXISTS ITEM_Seller1 (
+            "CREATE TABLE IF NOT EXISTS item_seller1 (
                 item_id INT AUTO_INCREMENT PRIMARY KEY,
-                item_name VARCHAR(255),
-                stock_qty INT,
-                price_of_unit DECIMAL(10, 2)
+                item_name VARCHAR(255) NOT NULL,
+                stock_qty INT NOT NULL DEFAULT 0,
+                price_of_unit DECIMAL(10, 2) NOT NULL
             )",
-            "CREATE TABLE IF NOT EXISTS ITEM_Seller2 (
+            "CREATE TABLE IF NOT EXISTS item_seller2 (
                 item_id INT AUTO_INCREMENT PRIMARY KEY,
-                item_name VARCHAR(255),
-                stock_qty INT,
-                price_of_unit DECIMAL(10, 2)
+                item_name VARCHAR(255) NOT NULL,
+                stock_qty INT NOT NULL DEFAULT 0,
+                price_of_unit DECIMAL(10, 2) NOT NULL
             )"
         ];
 

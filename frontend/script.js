@@ -63,9 +63,9 @@ function fetchItems(seller) {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        displayItems(data.data);
+        displayItems(data.data, data.seller_ip);
       } else {
-        alert(data.message);
+        // alert(data.message);
       }
     });
 }
@@ -82,6 +82,7 @@ function searchItems() {
   fetch(endpoint)
     .then((response) => response.json())
     .then((data) => {
+      console.log(data, "testing data");
       if (data.success) {
         displayItems(data.items);
       } else {
@@ -90,7 +91,7 @@ function searchItems() {
     });
 }
 
-function displayItems(items) {
+function displayItems(items, seller_ip = null) {
   const contentDiv = document.getElementById("content");
 
   let html = '<table border="1" cellspacing="0" cellpadding="10">';
@@ -103,7 +104,9 @@ function displayItems(items) {
                 <td>${item.item_name}</td>
                 <td>${item.stock_qty}</td>
                 <td>${item.price_of_unit}</td>
-                <td><button onclick="purchaseItem('${item.item_id}')">Purchase</button></td>
+                <td><button onclick="purchaseItem('${item.item_id}', '${
+      seller_ip ? seller_ip : item.seller_ip
+    }')">Purchase</button></td>
             </tr>`;
   });
 
@@ -112,7 +115,7 @@ function displayItems(items) {
   contentDiv.innerHTML = html;
 }
 
-function purchaseItem(itemId) {
+function purchaseItem(itemId, sellerIP) {
   const userId = currentUserId;
   if (!userId) {
     alert("Please provide a User ID.");
@@ -129,7 +132,7 @@ function purchaseItem(itemId) {
       itemId: itemId,
       userId: userId,
       quantity: 1,
-      seller: "Seller1",
+      seller_ip: sellerIP,
     };
 
     fetch("https://marketplace.test/purchase-item", {
@@ -146,6 +149,8 @@ function purchaseItem(itemId) {
         return response.json();
       })
       .then((data) => {
+        console.log(data, "seller ip address");
+
         if (data.success) {
           alert("Item purchased successfully.");
         } else {
@@ -199,7 +204,7 @@ function displayPurchases(purchases) {
 
   let html = '<table border="1" cellspacing="0" cellpadding="10">';
   html +=
-    "<thead><tr><th>Purchase ID</th><th>User ID</th><th>Item ID</th><th>Quantity</th><th>Price</th><th>Seller</th><th>Date</th><th>Actions</th></tr></thead><tbody>";
+    "<thead><tr><th>Purchase ID</th><th>User ID</th><th>Item ID</th><th>Quantity</th><th>Price</th><th>Seller IP</th><th>Date</th><th>Actions</th></tr></thead><tbody>";
 
   purchases.forEach((purchase) => {
     html += `<tr>
@@ -208,7 +213,7 @@ function displayPurchases(purchases) {
                   <td>${purchase.item_id}</td>
                   <td>${purchase.quantity}</td>
                   <td>${purchase.price}</td>
-                  <td>${purchase.seller_id}</td>
+                  <td>${purchase.seller_ip}</td>
                   <td>${purchase.date}</td>
                   <td><button onclick="cancelPurchase('${purchase.pur_id}')">Cancel</button></td>
               </tr>`;
@@ -289,6 +294,8 @@ function addBalance() {
     alert("Please provide a User ID.");
     return;
   }
+
+  currentUserId = currentUserId || userId;
 
   if (isNaN(amount) || amount <= 0) {
     alert("Please provide a valid amount greater than 0.");

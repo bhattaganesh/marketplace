@@ -61,7 +61,7 @@ class App
         }
 
         if ($method === 'GET' && $path === '/seller2/items') {
-            return $this->getItemList('Seller2');
+            return $this->getItemList('seller2');
         }
 
 
@@ -149,13 +149,13 @@ class App
         echo json_encode($response);
     }
 
-    private function getItemList($seller = 'Seller1')
+    private function getItemList($seller = 'seller1')
     {
         $itemService = new ItemService($this->db);
         $items = $itemService->getItemsForSeller($seller);
 
         if ($items) {
-            return ['success' => true, 'data' => $items];
+            return ['success' => true, 'data' => $items, 'seller_ip' => 'seller1' === $seller ? '127.0.0.1:8080' : '127.0.0.1:8000'];
         } else {
             return ['success' => false, 'message' => 'No items found.'];
         }
@@ -179,7 +179,13 @@ class App
         $itemId = $this->data['itemId'] ?? 0;
         $userId = $this->data['userId'] ?? 0;
         $quantity = $this->data['quantity'] ?? 1;
-        $seller = $this->data['seller'] ?? null; // Expected values are either Seller1 or Seller2.
+        $seller = $this->data['seller_ip'] ?? null;
+
+        if ('127.0.0.1:8000' == $seller) {
+            $seller = 'seller2';
+        } else if ('127.0.0.1:8080' == $seller) {
+            $seller = 'seller1';
+        }
 
         $purchaseService = new PurchaseService($this->db);
         return $purchaseService->makePurchase($userId, $itemId, $quantity, $seller);

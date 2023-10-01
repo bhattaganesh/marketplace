@@ -15,14 +15,14 @@ class ItemModel
 
     public function getItemsBySeller($seller)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM ITEM_$seller");
+        $stmt = $this->conn->prepare("SELECT * FROM item_$seller");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getItemById($itemId, $seller)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM ITEM_$seller WHERE item_id = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM item_$seller WHERE item_id = ?");
         $stmt->execute([$itemId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }

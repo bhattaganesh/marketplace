@@ -9,8 +9,8 @@ class ItemSearchService
     public function __construct()
     {
         $this->endpoints = [
-            'https://marketplace.test/seller1/items',
-            'https://marketplace.test/seller2/items',
+            '127.0.0.1:8080' => 'https://marketplace.test/seller1/items', // Here we are representing seller 1 as IP address 127.0.0.1:8080
+            '127.0.0.1:8000' => 'https://marketplace.test/seller2/items', // Here we are representing seller 2 as IP address 127.0.0.1:8000
         ];
     }
 
@@ -19,8 +19,9 @@ class ItemSearchService
         $allItems = [];
 
         // Fetch items from each endpoint.
-        foreach ($this->endpoints as $endpoint) {
-            $items = $this->fetchItemsFromEndpoint($endpoint);
+        foreach ($this->endpoints as $ip => $endpoint) {
+            $items = $this->fetchItemsFromEndpoint($ip, $endpoint);
+
             if (!empty($items)) {
                 $allItems = array_merge($allItems, $items);
             }
@@ -39,7 +40,7 @@ class ItemSearchService
         return $filteredItems;
     }
 
-    private function fetchItemsFromEndpoint($endpoint)
+    private function fetchItemsFromEndpoint($ip, $endpoint)
     {
         $contextOptions = [
             'ssl' => [
@@ -70,7 +71,7 @@ class ItemSearchService
 
         // Modify items to include the endpoint.
         foreach ($items['data'] as &$item) {
-            $item['seller_endpoint'] = $endpoint;
+            $item['seller_ip'] = $ip;
         }
 
         return $items['data'];

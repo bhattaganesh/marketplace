@@ -15,7 +15,7 @@ class UserModel
 
     public function getUser($userId)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM USER WHERE user_id = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM user WHERE user_id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -27,7 +27,7 @@ class UserModel
             return false;
         }
 
-        $stmt = $this->conn->prepare("UPDATE USER SET balance = balance + ? WHERE user_id = ?");
+        $stmt = $this->conn->prepare("UPDATE user SET balance = balance + ? WHERE user_id = ?");
         $stmt->execute([$amount, $userId]);
 
         // Return true if at least one row was affected.
