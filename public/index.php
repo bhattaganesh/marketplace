@@ -31,8 +31,7 @@ class App
 
     public function run()
     {
-        $response = $this->routeRequest();
-        $this->sendResponse($response);
+        $this->routeRequest();
     }
 
     private function redirectToHttps()
@@ -78,26 +77,30 @@ class App
             $token = $this->data['token'] ?? null;
 
             if (!$this->validateToken($token)) {
-                return ['success' => false, 'message' => 'Invalid or expired token.'];
+                $this->sendResponse(['success' => false, 'message' => 'Invalid or expired token.'], 401);
+                return;
             }
 
-            return $this->purchaseItem();
+            $this->sendResponse($this->purchaseItem(), 201);
+            return;
         }
 
 
         if ($method === 'GET' && $path === '/search-purchase') {
-            return $this->searchPurchase();
+            $this->sendResponse($this->searchPurchase(), 200);
+            return;
         }
 
         if ($method === 'DELETE' && $path === '/cancel-purchase') {
-
             $token = $this->data['token'] ?? null;
 
             if (!$this->validateToken($token)) {
-                return ['success' => false, 'message' => 'Invalid or expired token.'];
+                $this->sendResponse(['success' => false, 'message' => 'Invalid or expired token.'], 401);
+                return;
             }
 
-            return $this->cancelPurchase();
+            $this->sendResponse($this->cancelPurchase(), 200);
+            return;
         }
 
         // Endpoint: Add Balance
@@ -105,14 +108,24 @@ class App
             $token = $this->data['token'] ?? null;
 
             if (!$this->validateToken($token)) {
-                return ['success' => false, 'message' => 'Invalid or expired token.'];
+                $this->sendResponse(['success' => false, 'message' => 'Invalid or expired token.'], 401);
+                return;
             }
 
             $amount = $this->data['amount'] ?? 0;
             $userId = $this->data['userId'] ?? 0;
-
             $balanceService = new BalanceService($this->db);
-            return $balanceService->addUserBalance($userId, $amount);
+            $result = $balanceService->addUserBalance($userId, $amount);
+            if (false === $result) {
+                $this->sendResponse(['success' => false, 'message' => 'User not found.'], 400);
+            }
+
+            if (null === $result) {
+                $this->sendResponse(['success' => false, 'message' => 'Failed to update balance.'], 500);
+            }
+
+            $this->sendResponse(['success' => true, 'message' => 'Balance updated successfully.'], 201);
+            return;
         }
 
         // Endpoint: Card Check
@@ -121,18 +134,15 @@ class App
             $pin = $this->data['pin'] ?? null;
 
             $cardService = $this->getCardService();
-
             $jwt = $cardService->verifyCardCredentials($cardNum, $pin);
 
             if ($jwt) {
-                return ['status' => 'success', 'token' => $jwt];
+                $this->sendResponse(['status' => 'success', 'token' => $jwt], 200);
+                return;
             } else {
-                return ['status' => 'error', 'message' => 'Invalid card credentials'];
+                $this->sendResponse(['status' => 'error', 'message' => 'Invalid card credentials'], 401);
+                return;
             }
-        }
-
-        if ($method === 'OPTIONS') {
-            return []; // Just return an empty response for OPTIONS request
         }
 
         return $this->handleInvalidEndpoint();
@@ -140,17 +150,34 @@ class App
 
     private function handleInvalidEndpoint()
     {
-        header('HTTP/1.1 404 Not Found');
-        return ['status' => 'error', 'message' => 'Invalid endpoint'];
+        $this->sendResponse(['status' => 'error', 'message' => 'Invalid endpoint'], 404);
     }
 
-    private function sendResponse($response)
+    private function sendResponse($response, $statusCode = 200)
     {
+        header('HTTP/1.1 ' . $statusCode . ' ' . $this->getStatusCodeMessage($statusCode));
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
         header('Access-Control-Allow-Headers: Content-Type, Authorization');
         echo json_encode($response);
+        exit;
+    }
+
+    private function getStatusCodeMessage($statusCode)
+    {
+        $codes = array(
+            200 => 'OK',
+            201 => 'Created',
+            204 => 'No Content',
+            400 => 'Bad Request',
+            401 => 'Unauthorized',
+            403 => 'Forbidden',
+            404 => 'Not Found',
+            500 => 'Internal Server Error',
+        );
+
+        return (isset($codes[$statusCode])) ? $codes[$statusCode] : '';
     }
 
     private function getItemList($seller = 'seller1')
@@ -159,9 +186,12 @@ class App
         $items = $itemService->getItemsForSeller($seller);
 
         if ($items) {
-            return ['success' => true, 'data' => $items, 'seller_ip' => 'seller1' === $seller ? '127.0.0.1:8080' : '127.0.0.1:8000'];
+            $this->sendResponse(
+                ['success' => true, 'data' => $items, 'seller_ip' => 'seller1' === $seller ? '127.0.0.1:8080' : '127.0.0.1:8000'],
+                200
+            );
         } else {
-            return ['success' => false, 'message' => 'No items found.'];
+            $this->sendResponse(['success' => false, 'message' => 'No items found.'], 404);
         }
     }
 
@@ -169,13 +199,17 @@ class App
     {
         $searchTerm = $_GET['search'] ?? null;
         if (!$searchTerm) {
-            return ['success' => false, 'message' => 'Search term not provided.'];
+            $this->sendResponse(['success' => false, 'message' => 'Search term not provided.'], 400);
+            return;
         }
-
         $itemSearchService = new ItemSearchService();
         $results = $itemSearchService->searchItems($searchTerm);
 
-        return ['success' => true, 'items' => $results];
+        if ($results) {
+            $this->sendResponse(['success' => true, 'items' => $results], 200);
+        } else {
+            $this->sendResponse(['success' => false, 'message' => 'No items found for the given search term.'], 404);
+        }
     }
 
     private function purchaseItem()
@@ -185,14 +219,21 @@ class App
         $quantity = $this->data['quantity'] ?? 1;
         $seller = $this->data['seller_ip'] ?? null;
 
-        if ('127.0.0.1:8000' == $seller) {
-            $seller = 'seller2';
-        } else if ('127.0.0.1:8080' == $seller) {
-            $seller = 'seller1';
+        $purchaseService = new PurchaseService($this->db);
+
+        $result = $purchaseService->makePurchase($userId, $itemId, $quantity, $seller);
+
+        if (-2 === $result) {
+            $this->sendResponse(['success' => false, 'message' => 'Item not found.'], 400);
+        } else if (false === $result) {
+            $this->sendResponse(['success' => false, 'message' => 'User not found.'], 400);
+        } else if (-1 === $result) {
+            $this->sendResponse(['success' => false, 'message' => 'Insufficient balance.'], 400);
+        } else if (null === $result) {
+            $this->sendResponse(['success' => false, 'message' => 'Sorry!, error while creating purchasing.'], 500);
         }
 
-        $purchaseService = new PurchaseService($this->db);
-        return $purchaseService->makePurchase($userId, $itemId, $quantity, $seller);
+        $this->sendResponse(['success' => true, 'message' => 'Purchase completed successfully!'], 201);
     }
 
 
@@ -204,11 +245,21 @@ class App
         $purchaseService = new PurchaseService($this->db);
 
         if ($purId) {
-            return $purchaseService->getPurchaseDetails($purId);
+            $result = $purchaseService->getPurchaseDetails($purId);
+            if ($result) {
+                $this->sendResponse(['success' => true, 'data' => $result], 200);
+            } else {
+                $this->sendResponse(['success' => false, 'message' => 'No purchase found for the provided purId.'], 404);
+            }
         } elseif ($userId) {
-            return $purchaseService->getPurchasesByUserId($userId);
+            $result = $purchaseService->getPurchasesByUserId($userId);
+            if ($result) {
+                $this->sendResponse(['success' => true, 'data' => $result], 200);
+            } else {
+                $this->sendResponse(['success' => false, 'message' => 'No purchases found for the provided userId.'], 404);
+            }
         } else {
-            return ['success' => false, 'message' => 'Neither purId nor userId provided.'];
+            $this->sendResponse(['success' => false, 'message' => 'Neither purId nor userId provided.'], 400);
         }
     }
 
@@ -216,7 +267,12 @@ class App
     {
         $purchaseId = $this->data['purchaseId'] ?? 0;
         $purchaseService = new PurchaseService($this->db);
-        return $purchaseService->cancelPurchase($purchaseId);
+
+        if ($purchaseService->cancelPurchase($purchaseId)) {
+            $this->sendResponse(['success' => true, 'message' => 'Purchase cancelled successfully.'], 201);
+        } else {
+            $this->sendResponse(['success' => false, 'message' => 'Failed to cancel the purchase.'], 500);
+        }
     }
 
     private function getCardService()

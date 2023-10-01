@@ -19,15 +19,15 @@ class BalanceService
         $user = $this->userModel->getUser($userId);
 
         if (!$user) {
-            return ['success' => false, 'message' => 'User not found.'];
+            return false;
         }
 
         $result = $this->userModel->updateUserBalance($userId, $amount);
 
         if ($result) {
-            return ['success' => true, 'message' => 'Balance updated successfully.'];
+            return $result;
         } else {
-            return ['success' => false, 'message' => 'Failed to update balance.'];
+            return null;
         }
     }
 }

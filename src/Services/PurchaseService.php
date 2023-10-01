@@ -24,7 +24,7 @@ class PurchaseService
         $item = $this->itemModel->getItemById((int)$itemId, $seller);
 
         if (!$item) {
-            return ['success' => false, 'message' => 'Item not found.'];
+            return -2;
         }
 
         $totalPrice = $item['price_of_unit'] *  $quantity;
@@ -33,11 +33,11 @@ class PurchaseService
         $user = $this->userModel->getUser((int)$userId);
 
         if (!$user) {
-            return ['success' => false, 'message' => 'User not found.'];
+            return false;
         }
 
         if ($user['balance'] < $totalPrice) {
-            return ['success' => false, 'message' => 'Insufficient balance.'];
+            return -1;
         }
 
         $purchaseData = [
@@ -51,34 +51,26 @@ class PurchaseService
         $purId = $this->purchaseModel->insertPurchase($purchaseData);
 
         if (!$purId) {
-            return ['success' => false, 'message' => 'Sorry!, error while creating purchasing.'];
+            return null;
         }
 
         $this->userModel->updateUserBalance($userId, -$totalPrice);
 
-        return ['success' => true, 'message' => 'Purchase completed successfully!'];
+        return true;
     }
 
     public function getPurchasesByUserId($userId)
     {
         $purchases = $this->purchaseModel->getPurchasesForUser($userId);
 
-        if (!$purchases) {
-            return ['success' => false, 'message' => 'No purchases found for the user.'];
-        }
-
-        return ['success' => true, 'data' => $purchases];
+        return $purchases ?? array();
     }
 
     public function getPurchaseDetails($purId)
     {
         $purchase = $this->purchaseModel->getPurchase($purId);
 
-        if (!$purchase) {
-            return ['success' => false, 'message' => 'Purchase not found.'];
-        }
-
-        return ['success' => true, 'data' => array($purchase)];
+        return $purchase ? array($purchase) : array();
     }
 
 
@@ -87,9 +79,9 @@ class PurchaseService
         $deletedRows = $this->purchaseModel->deletePurchase($purId);
 
         if (!$deletedRows) {
-            return ['success' => false, 'message' => 'Failed to cancel the purchase or purchase not found.'];
+            return false;
         }
 
-        return ['success' => true, 'message' => 'Purchase cancelled successfully.'];
+        return true;
     }
 }
