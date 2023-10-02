@@ -1,6 +1,6 @@
 {
-  "name": "ganesh-bhatta/marketplace",
-  "description": "A marketplace project with multiple web services.",
+  "name": "binita-sharma/marketplace",
+  "description": "Online Shopping Website with Multiple Services.",
   "type": "project",
   "require": {
     "php": "^7.4 || ^8.0",
@@ -14,8 +14,8 @@
   },
   "authors": [
     {
-      "name": "Ganesh Bhatta",
-      "email": "bhattaganesh05@gmail.com"
+      "name": "Binita sharma",
+      "email": "bsharma3@utas.edu.au"
     }
   ],
   "minimum-stability": "stable"
