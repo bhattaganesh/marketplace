@@ -63,11 +63,6 @@ class App
             return $this->getItemList();
         }
 
-        if ($method === 'GET' && $path === '/seller2/items') {
-            return $this->getItemList('seller2');
-        }
-
-
         if ($method === 'GET' && $path === '/items') {
             return $this->searchForItems();
         }
@@ -187,7 +182,7 @@ class App
 
         if ($items) {
             $this->sendResponse(
-                ['success' => true, 'data' => $items, 'seller_ip' => 'seller1' === $seller ? '127.0.0.1:8080' : '127.0.0.1:8000'],
+                ['success' => true, 'data' => $items, 'seller_ip' => '127.0.0.1:8080'],
                 200
             );
         } else {

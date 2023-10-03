@@ -58,7 +58,7 @@ function validateCard() {
 }
 
 function fetchItems(seller) {
-  const endpoint = `${DOMAIN}/${seller}/items`;
+  const endpoint = seller;
 
   fetch(endpoint)
     .then((response) => response.json())
@@ -332,4 +332,4 @@ function addBalance() {
 }
 
 // Initialize the default view with Seller1's items
-fetchItems("seller1");
+fetchItems("/seller1/items");

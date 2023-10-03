@@ -20,8 +20,8 @@
 
     <section class="actions">
       <div>
-        <button onclick="fetchItems('seller1')">Seller1 Items</button>
-        <button onclick="fetchItems('seller2')">Seller2 Items</button>
+        <button onclick="fetchItems('/seller1/items')">Seller1 Items</button>
+        <button onclick="fetchItems('https://seller2-shopping-site.test/items')">Seller2 Items</button>
         <button onclick="showAddBalanceForm()">Add Balance</button>
       </div>
       <div>
